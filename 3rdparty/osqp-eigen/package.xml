@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>osqp-eigen</name>
+  <version>0.0.0</version>
+  <description>osqp-eigen ROS Wrapper</description>
+  <maintainer email="anzai@jsk.imi.i.u-tokyo.ac.jp">Tomoki Anzai</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <build_depend>git</build_depend>
+  <build_depend>osqp</build_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+
+</package>
+
