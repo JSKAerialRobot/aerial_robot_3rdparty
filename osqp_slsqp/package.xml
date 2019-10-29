@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>osqp_slsqp</name>
+  <version>0.0.0</version>
+  <description>SLSQP algorithm implemented with osqp-eigen</description>
+
+  <maintainer email="anzai@jsk.imi.i.u-tokyo.ac.jp">Tomoki Anzai</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>osqp</depend>
+  <depend>osqp-eigen</depend>
+
+  <export>
+
+  </export>
+</package>
