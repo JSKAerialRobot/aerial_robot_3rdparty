@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>aerial_robot_3rdparty</name>
+  <version>2.1.13</version>
+  <description>
+    <p>Metapackage that contains commonly used 3rdparty toolset for aerial_robot</p>
+  </description>
+
+  <maintainer email="anzai@jsk.t.u-tokyo.ac.jp">Tomoki Anzai</maintainer>
+  <author email="anzai@jsk.t.u-tokyo.ac.jp">Tomoki Anzai</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>osqp</run_depend>
+  <run_depend>osqp-eigen</run_depend>
+  <export>
+    <metapackage/>
+  </export>
+</package>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>osqp</name>
+  <version>0.0.0</version>
+  <description>osqp ROS Wrapper</description>
+  <maintainer email="anzai@jsk.imi.i.u-tokyo.ac.jp">Tomoki Anzai</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <build_depend>git</build_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+
+</package>
+
