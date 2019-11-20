@@ -82,7 +82,10 @@ public:
       lower_bound(i) = 0.0;
     }
 
-    SLSQPSolver<decltype(cost_function_gradient), decltype(inequality_constraint), decltype(inequality_constraint_gradient)> solver(n_variables, n_constraints, cost_function_gradient, inequality_constraint, inequality_constraint_gradient, lower_bound, upper_bound, x, 1e-4, 1e-3);
+    // This declaration is pretty long. We recommend to use helper function.
+    // SLSQPSolver<decltype(cost_function_gradient), decltype(inequality_constraint), decltype(inequality_constraint_gradient)> solver(n_variables, n_constraints, cost_function_gradient, inequality_constraint, inequality_constraint_gradient, lower_bound, upper_bound, x, 1e-4, 1e-3);
+
+    auto solver = makeSLSQPSolver(n_variables, n_constraints, cost_function_gradient, inequality_constraint, inequality_constraint_gradient, lower_bound, upper_bound, x, 1e-4, 1e-3);
 
     solver.solve();
     std::cout << "solution" << std::endl;

@@ -208,7 +208,9 @@ private:
 };
 
 //helper
+
 template <typename T1, typename T2, typename T3>
-SLSQPSolver<T1, T2, T3> makeSLSQPSolver(int n_variables, int n_constraints, T1 cost_function_gradient, T2 inequality_constraint, T3 inequality_constraint_gradient, Eigen::VectorXd lower_bound, Eigen::VectorXd upper_bound, Eigen::VectorXd initial_x, double sqp_relative_tolerance, double qp_relative_tolerance) {
+SLSQPSolver<T1, T2, T3> makeSLSQPSolver(int n_variables, int n_constraints, T1 cost_function_gradient, T2 inequality_constraint, T3 inequality_constraint_gradient, Eigen::VectorXd lower_bound, Eigen::VectorXd upper_bound, Eigen::VectorXd initial_x, double sqp_relative_tolerance = 1e-4, double qp_relative_tolerance = 1e-2, int max_loop_count = 1000, bool verbose = false)
+{
   return SLSQPSolver<T1, T2, T3>(n_variables, n_constraints, cost_function_gradient, inequality_constraint, inequality_constraint_gradient, lower_bound, upper_bound, initial_x, sqp_relative_tolerance, qp_relative_tolerance);
 }
