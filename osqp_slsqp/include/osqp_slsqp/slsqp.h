@@ -190,8 +190,7 @@ private:
     ok &= qp_solver_.updateHessianMatrix(qp_hessian_sparse_); //H
     ok &= qp_solver_.updateGradient(qp_gradient_); //q
     ok &= qp_solver_.updateLinearConstraintsMatrix(qp_linear_matrix_sparse_); //A
-    ok &= qp_solver_.updateLowerBound(qp_lower_bound_); //lb
-    ok &= qp_solver_.updateUpperBound(qp_upper_bound_); //ub
+    ok &= qp_solver_.updateBounds(qp_lower_bound_, qp_upper_bound_);
     ok &= qp_solver_.solve();
 
     if (!ok) {
