@@ -8,7 +8,7 @@
   <license>BSD</license>
 
   <buildtool_depend>cmake</buildtool_depend>
-
+  <build_depend>eigen</build_depend>
   <build_depend>git</build_depend>
   <build_depend>osqp</build_depend>
 
