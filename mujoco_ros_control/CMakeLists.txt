@@ -23,8 +23,12 @@ add_custom_command(OUTPUT ${MUJOCO}_build
   )
 add_custom_target(${MUJOCO} DEPENDS ${MUJOCO}_build)
 
-set(MUJOCO_INCLUDE_DIRS build/mujoco-2.3.7/include)
-set(MUJOCO_LIBRARY ${PROJECT_SOURCE_DIR}/build/mujoco-2.3.7/lib/libmujoco.so)
+set(MUJOCO_VERSION 2.3.7)
+set(MUJOCO_INCLUDE_DIRS build/mujoco-${MUJOCO_VERSION}/include)
+set(MUJOCO_LIBRARY ${PROJECT_SOURCE_DIR}/build/mujoco-${MUJOCO_VERSION}/lib/libmujoco.so)
+if (NOT EXISTS ${MUJOCO_INCLUDE_DIRS})
+  file(MAKE_DIRECTORY ${MUJOCO_INCLUDE_DIRS})
+endif()
 
 catkin_package(
   INCLUDE_DIRS include ${MUJOCO_INCLUDE_DIRS}
