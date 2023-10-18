@@ -33,7 +33,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include ${MUJOCO_INCLUDE_DIRS}
   LIBRARIES ${MUJOCO_LIBRARY} mujoco_default_robot_hw_sim
-  CATKIN_DEPENDS
+  CFG_EXTRAS model_convert.cmake #https://answers.ros.org/question/243016/add_definitions-package-exportation/
 )
 
 ###########
