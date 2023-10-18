@@ -8,7 +8,7 @@ TARBALL_URL = https://github.com/deepmind/mujoco/releases/download/$(VERSION)/$(
 SOURCE_DIR = build/mujoco-$(VERSION)
 ifeq ($(ARCH),x86_64)
   SHA256SUM = 3f75e53e3356ce4ee6759cde5358b7a53f51632f495b910aedc9caa5bf98ac39
-else ifeq ($(TARGET_CPU),aarch64)
+else ifeq ($(ARCH),aarch64)
   SHA256SUM = 422d52e98fba8b6328d67e00c87d59ba8108f1c0df8a4c048811fa73be9e8c71
 else
   SHA256SUM = 
