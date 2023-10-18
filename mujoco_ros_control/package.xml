@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<package>
+  <name>mujoco_ros_control</name>
+  <version>0.0.0</version>
+  <description>The mujoco_ros_control package</description>
+
+  <maintainer email="chou@jsk.imi.i.u-tokyo.ac.jp">chou</maintainer>
+
+  <license>BSD</license>
+
+  <author>Moju Zhao</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>controller_manager</build_depend>
+  <build_depend>hardware</build_depend>
+  <build_depend>libglfw3-dev</build_depend>
+  <build_depend>mk</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rosgraph_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>urdf</build_depend>
+
+  <run_depend>blender</run_depend>
+  <run_depend>controller_interface</run_depend>
+  <run_depend>controller_manager</run_depend>
+  <run_depend>hardware</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
+  <run_depend>ros_controllers</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>urdf</run_depend>
+
+  <export>
+    <mujoco_ros_control plugin="${prefix}/mujoco_robot_hw_sim_plugin.xml"/>
+  </export>
+
+</package>

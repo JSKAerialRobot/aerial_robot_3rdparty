@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="robot_ns" default="/" />
+  <arg name="headless" default="false" />
+  <arg name="mujoco_model" default="" />
+  <rosparam param="/use_sim_time">true</rosparam>
+
+  <node pkg="mujoco_ros_control" type="mujoco_ros_control" name="mujoco_ros_control" output="screen" ns="$(arg robot_ns)">
+    <param name="headless" value="$(arg headless)"/>
+    <param name="mujoco_model_path" value="$(arg mujoco_model)"/>
+  </node>
+
+</launch>
