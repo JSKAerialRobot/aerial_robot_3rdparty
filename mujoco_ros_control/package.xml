@@ -13,7 +13,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>controller_manager</build_depend>
-  <build_depend>hardware</build_depend>
+  <build_depend>hardware_interface</build_depend>
   <build_depend>libglfw3-dev</build_depend>
   <build_depend>mk</build_depend>
   <build_depend>pluginlib</build_depend>
@@ -26,7 +26,7 @@
   <run_depend>blender</run_depend>
   <run_depend>controller_interface</run_depend>
   <run_depend>controller_manager</run_depend>
-  <run_depend>hardware</run_depend>
+  <run_depend>hardware_interface</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
