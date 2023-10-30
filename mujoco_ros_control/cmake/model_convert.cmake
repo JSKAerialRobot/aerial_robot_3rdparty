@@ -8,8 +8,17 @@ macro(mujoco_model_convert _PROJECT_SOURCE_DIR _YAML_FILE)
   string(REPLACE "\t" ";" LSB_RELEASE_CODENAME_LIST ${LSB_RELEASE_CODENAME})
   list(GET LSB_RELEASE_CODENAME_LIST 1 CODENAME)
 
+  find_program(UNAME_EXEC uname)
+  execute_process(COMMAND ${UNAME_EXEC} -m
+    OUTPUT_VARIABLE UNAME_OUTPUT
+    )
+
   if(${CODENAME} MATCHES "xenial")
     MESSAGE(WARNING "Do not convert mujoco model in ${CODENAME}, because of old version of blender")
+
+  elseif(${UNAME_OUTPUT} MATCHES "aarch64")
+    MESSAGE(WARNING "Do not convert mujoco model in ${UNAME_OUTPUT}")
+
   else()
 
     add_custom_command(OUTPUT ${_PROJECT_SOURCE_DIR}/mujoco
