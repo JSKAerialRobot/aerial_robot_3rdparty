@@ -7,7 +7,6 @@ find_package(osqp REQUIRED)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
-
 find_program(LSB_RELEASE_EXEC lsb_release)
 execute_process(COMMAND ${LSB_RELEASE_EXEC} -c
     OUTPUT_VARIABLE LSB_RELEASE_CODENAME
@@ -18,8 +17,10 @@ list(GET LSB_RELEASE_CODENAME_LIST 1 CODENAME)
 
 if(${CODENAME} MATCHES "xenial")
   set(GIT_TAG 338447d)
+   set(PATCH "s/set\(CMAKE_CXX_STANDARD\ 14\)/add_compile_options\(-std=c++17\)/g")
 else()
   set(GIT_TAG v0.6.2)
+  set(PATCH "s/cxx_std_14/cxx_std_17/g")
 endif()
 
 execute_process(COMMAND
@@ -30,6 +31,8 @@ ExternalProject_Add(
   osqp-eigen
   GIT_REPOSITORY https://github.com/robotology/osqp-eigen
   GIT_TAG ${GIT_TAG}
+  PATCH_COMMAND
+    COMMAND sed -i -e ${PATCH} CMakeLists.txt
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
   INSTALL_COMMAND echo "install"
   DEPEND osqp
