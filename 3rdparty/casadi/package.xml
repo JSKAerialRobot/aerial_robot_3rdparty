@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>casadi</name>
+  <version>0.0.0</version>
+  <description>casadi ROS Wrapper</description>
+  <maintainer email="sugihara@jsk.imi.i.u-tokyo.ac.jp">Kazuki Sugihara</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <build_depend>git</build_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+
+</package>
+
