@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(casadi)
 include(ExternalProject)
 
@@ -13,7 +13,7 @@ ExternalProject_Add(
   casadi
   GIT_REPOSITORY https://github.com/casadi/casadi
   GIT_TAG 3.6.4
-  CMAKE_ARGS -DWITH_PYTHON=OFF -DWITH_PYTHON3=OFF -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+  CMAKE_ARGS -DWITH_IPOPT=ON -DWITH_PYTHON=OFF -DWITH_PYTHON3=OFF -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
   INSTALL_COMMAND echo "install"
   )
 
