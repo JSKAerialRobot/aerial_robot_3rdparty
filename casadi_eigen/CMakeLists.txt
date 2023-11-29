@@ -45,3 +45,10 @@ target_link_libraries(casadi_sample2
   casadi
   ${catkin_LIBRARIES}
   )
+
+add_executable(casadi_sample3 src/casadi_sample3.cpp)
+target_link_libraries(casadi_sample3
+  casadi
+  casadi_eigen
+  ${catkin_LIBRARIES}
+  )
