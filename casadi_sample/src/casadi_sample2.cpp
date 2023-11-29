@@ -2,17 +2,15 @@
 
 /**********************************/
 /*
-The problem is from NLOPT tutorial
+The problem is original and contains equality constraint
 
 variable: x in R^2 (2D vector)
 
-min sqrt(x_2)
+min 2x_1 + x_2^2
 
-s.t. x_2 >= 0
-     x_2 >= (a1 x1 + b1)^3
-     x_2 >= (a2 x1 + b2)^3
+s.t. 2x_1^2 + x_2^2 = 1                  -- (1)
 
-for a1 = 2, b1 = 0, a2 = -1, b2 = 1
+ans -sqrt(2) at [- sqrt(2) / 2, 0]
 
 */
 /**********************************/
@@ -25,13 +23,11 @@ int main()
   bool verbose = true;
 
   // cost function
-  casadi::MX objective = sqrt(x(1));
+  casadi::MX objective = 2 * x(0) + x(1) * x(1);
 
   // constraints
   std::vector<casadi::MX> constraints;
-  constraints.push_back(-x(1));
-  constraints.push_back(-x(1) + pow((2 * x(0) + 0), 3));
-  constraints.push_back(-x(1) + pow((-1 * x(0) + 1), 3));
+  constraints.push_back(2 * x(0) * x(0) + x(1) * x(1) - 1);
 
   if(verbose) std::cout << constraints << std::endl;
 
@@ -48,9 +44,9 @@ int main()
 
   casadi::Function S = casadi::nlpsol("S", "ipopt", nlp, opt_dict);
 
-  casadi::DM initial_x = casadi::DM({1.234, 5.678});
-  casadi::DM ubg = casadi::DM({0.0, 0.0, 0.0});
-  casadi::DM lbg = casadi::DM({-INFINITY, -INFINITY, -INFINITY});
+  casadi::DM initial_x = casadi::DM({0.0, 0.0});
+  casadi::DM lbg = casadi::DM({0.0});
+  casadi::DM ubg = casadi::DM({0.0});
   casadi::DM lbx = casadi::DM({-INFINITY, -INFINITY});
   casadi::DM ubx = casadi::DM({INFINITY, INFINITY});
 
