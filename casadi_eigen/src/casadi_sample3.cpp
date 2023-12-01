@@ -41,7 +41,7 @@ int main()
     1.0, 2.0;
 
   Eigen::VectorXd p;
-  p.resize(2);
+  p.resize(n_variables);
   p <<
     1.0, 1.0;
 
@@ -62,7 +62,7 @@ int main()
     1.0, 0.0,
     0.0, 1.0;
 
-  casadi::MX objective = 1.0 / 2.0 * mtimes(mtimes(x.T(), eigenMatrixToCasadiDM(A)), x) + mtimes(eigenVectorToCasadiDm(p).T(), x);
+  casadi::MX objective = 1.0 / 2.0 * dot(x, mtimes(eigenMatrixToCasadiDM(A), x)) + dot(eigenVectorToCasadiDm(p), x);
   casadi::MX constraints = mtimes(eigenMatrixToCasadiDM(G), x);
 
   casadi::MXDict nlp = {{"x", x}, {"f", objective}, {"g", constraints}};
@@ -79,5 +79,4 @@ int main()
   auto res = S(casadi::DMDict{{"x0", initial_x}, {"lbg", eigenVectorToCasadiDm(lbg)}, {"ubg", eigenVectorToCasadiDm(ubg)}});
 
   std::cout << res << std::endl;
-
 }

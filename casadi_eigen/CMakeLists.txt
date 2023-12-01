@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS)
 
 find_package(casadi REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(NLopt REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -26,16 +25,8 @@ target_link_libraries(casadi_eigen
   ${EIGEN3_LIBRARIES}
   )
 
-# add_executable(casadi_nlopt src/casadi_nlopt.cpp)
-# target_link_libraries(casadi_nlopt
-#   casadi
-#   ${catkin_LIBRARIES}
-#   ${EIGEN3_LIBRARIES}
-#   ${NLOPT_LIBRARIES}
-#   )
-
-add_executable(casadi_sample src/casadi_sample.cpp)
-target_link_libraries(casadi_sample
+add_executable(casadi_sample1 src/casadi_sample1.cpp)
+target_link_libraries(casadi_sample1
   casadi
   ${catkin_LIBRARIES}
   )
