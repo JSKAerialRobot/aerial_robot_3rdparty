@@ -18,14 +18,18 @@ namespace mujoco_ros_control
     // get joint names from mujoco model
     for(int i = 0; i < mujoco_model_->njnt; i++)
       {
-      if(mujoco_model_->jnt_type[i] > 1)
-        {
-          joint_list_.push_back(mj_id2name(mujoco_model_, mjtObj_::mjOBJ_JOINT, i));
-        }
+        if(mujoco_model_->jnt_type[i] > 1)
+          {
+            joint_list_.push_back(mj_id2name(mujoco_model_, mjtObj_::mjOBJ_JOINT, i));
+          }
       }
 
     joint_state_pub_ = model_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
     control_input_sub_ = model_nh.subscribe("mujoco/ctrl_input", 1, &DefaultRobotHWSim::controlInputCallback, this);
+
+    dierct_joint_position_sub_ = model_nh.subscribe("mujoco/direct_joint_position", 1, &DefaultRobotHWSim::jointPositionCallback, this);
+    dierct_root_pose_sub_ = model_nh.subscribe("mujoco/direct_root_pose", 1, &DefaultRobotHWSim::rootPoseCallback, this);
+    direct_root_pose_flag_ = false;
 
     return true;
   }
@@ -61,6 +65,62 @@ namespace mujoco_ros_control
       {
         mujoco_data_->ctrl[i] = control_input_.at(i);
       }
+
+    // set the root pose directly if necessary
+    if (direct_root_pose_flag_) {
+      mjtNum* qpos = mujoco_data_->qpos;
+      // check the type of the first joint
+      switch (mujoco_model_->jnt_type[0]) {
+      case mjtJoint_::mjJNT_FREE:
+        {
+          qpos[0] = direct_root_pose_.position.x;
+          qpos[1] = direct_root_pose_.position.y;
+          qpos[2] = direct_root_pose_.position.z;
+          qpos[3] = direct_root_pose_.orientation.w;
+          qpos[4] = direct_root_pose_.orientation.x;
+          qpos[5] = direct_root_pose_.orientation.y;
+          qpos[6] = direct_root_pose_.orientation.z;
+          break;
+        }
+      case mjtJoint_::mjJNT_BALL:
+        {
+          qpos[0] = direct_root_pose_.orientation.w;
+          qpos[1] = direct_root_pose_.orientation.x;
+          qpos[2] = direct_root_pose_.orientation.y;
+          qpos[3] = direct_root_pose_.orientation.z;
+          break;
+        }
+      default:
+        {
+          break;
+        }
+      }
+      direct_root_pose_flag_ = false;
+    }
+
+    // set the joint position directly if necessary
+    const auto names = direct_joint_position_.name;
+    const auto target_positions = direct_joint_position_.position;
+    if (names.size() > 0)
+      {
+        for(int i = 0; i < names.size(); i++)
+          {
+            int id = mj_name2id(mujoco_model_, mjtObj_::mjOBJ_JOINT, names.at(i).c_str());
+            if(id == -1)
+              {
+                ROS_WARN_STREAM("mujoco: joint name " <<  names.at(i) << " does not exist");
+                continue;
+              }
+
+            mjtNum* qpos = mujoco_data_->qpos;
+            int* jnt_qposadr = mujoco_model_->jnt_qposadr;
+            qpos[jnt_qposadr[id]] = target_positions.at(i);
+
+
+          }
+        direct_joint_position_.name.resize(0);
+        direct_joint_position_.position.resize(0);
+      }
   }
 
   void DefaultRobotHWSim::controlInputCallback(const sensor_msgs::JointState & msg)
@@ -81,6 +141,25 @@ namespace mujoco_ros_control
             control_input_.at(actuator_id) = msg.position.at(i);
           }
       }
+  }
+
+  void DefaultRobotHWSim::jointPositionCallback(const sensor_msgs::JointState & msg)
+  {
+    if(msg.name.size() != msg.position.size())
+      {
+        ROS_WARN("mujoco: size of actuator names and size of input is not same.");
+        return;
+      }
+
+    direct_joint_position_ = msg;
+  }
+
+  void DefaultRobotHWSim::rootPoseCallback(const geometry_msgs::Pose & msg)
+  {
+    // check the validity of quaternion
+
+    direct_root_pose_ = msg;
+    direct_root_pose_flag_ = true;
   }
 
 }

@@ -3,6 +3,7 @@
 #include <urdf/model.h>
 #include <pluginlib/class_list_macros.h>
 #include <mujoco_ros_control/mujoco_robot_hw_sim.h>
+#include <geometry_msgs/Pose.h>
 #include <sensor_msgs/JointState.h>
 
 namespace mujoco_ros_control
@@ -25,6 +26,8 @@ namespace mujoco_ros_control
 
     void controlInputCallback(const sensor_msgs::JointState & msg);
 
+    void jointPositionCallback(const sensor_msgs::JointState & msg);
+    void rootPoseCallback(const geometry_msgs::Pose & msg);
 
   protected:
     mjModel* mujoco_model_;
@@ -33,10 +36,16 @@ namespace mujoco_ros_control
     std::vector<std::string> joint_list_;
     ros::Publisher joint_state_pub_;
     ros::Subscriber control_input_sub_;
+    ros::Subscriber dierct_joint_position_sub_;
+    ros::Subscriber dierct_root_pose_sub_;
     double joint_state_pub_rate_ = 0.02;
     std::vector<double> control_input_;
 
     ros::Time last_joint_state_time_;
+
+    sensor_msgs::JointState direct_joint_position_;
+    geometry_msgs::Pose direct_root_pose_;
+    bool direct_root_pose_flag_;
 
   };
 }
