@@ -12,6 +12,10 @@ namespace mujoco_ros_control
     mujoco_model_ = mujoco_model;
     mujoco_data_ = mujoco_data;
 
+    actuator_id_list_.resize(0);
+    int* actuator_trntype = mujoco_model_->actuator_trntype;
+    int* actuator_trnid = mujoco_model_->actuator_trnid;
+
     control_input_.resize(mujoco_model_->nu);
     joint_list_.resize(0);
 
@@ -21,6 +25,12 @@ namespace mujoco_ros_control
         if(mujoco_model_->jnt_type[i] > 1)
           {
             joint_list_.push_back(mj_id2name(mujoco_model_, mjtObj_::mjOBJ_JOINT, i));
+
+            for(int j = 0; j < mujoco_model_->nu; j++) {
+              if (actuator_trnid[2 * j] == i && actuator_trntype[j] == mjtTrn_::mjTRN_JOINT) {
+                actuator_id_list_.push_back(j);
+              }
+            }
           }
       }
 
@@ -45,15 +55,20 @@ namespace mujoco_ros_control
         mjtNum* qpos = mujoco_data_->qpos;
         int* jnt_qposadr = mujoco_model_->jnt_qposadr;
         mjtNum* qvel = mujoco_data_->qvel;
+        mjtNum* actuator_force = mujoco_data_->actuator_force;
         int* jnt_dofadr = mujoco_model_->jnt_dofadr;
+
         for(int i = 0; i < mujoco_model_->njnt; i++)
           {
             if(mujoco_model_->jnt_type[i] > 1)
               {
                 joint_state_msg.position.push_back(qpos[jnt_qposadr[i]]);
                 joint_state_msg.velocity.push_back(qvel[jnt_dofadr[i]]);
+                 int j = joint_state_msg.position.size() - 1;
+                joint_state_msg.effort.push_back(actuator_force[actuator_id_list_.at(j)]);
               }
           }
+
         joint_state_pub_.publish(joint_state_msg);
         last_joint_state_time_ = time;
       }
