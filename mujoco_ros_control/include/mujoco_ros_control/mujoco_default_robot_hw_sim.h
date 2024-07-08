@@ -34,6 +34,7 @@ namespace mujoco_ros_control
     mjData* mujoco_data_;
 
     std::vector<std::string> joint_list_;
+    std::vector<int> actuator_id_list_;
     ros::Publisher joint_state_pub_;
     ros::Subscriber control_input_sub_;
     ros::Subscriber dierct_joint_position_sub_;
