@@ -146,16 +146,32 @@ int main(int argc, char** argv)
 
   while(ros::ok())
     {
-      if(headless || (!headless && !glfwWindowShouldClose(window)))
+      bool paused = false;
+      if (!headless)
+        {
+          paused = mujoco_visualization_utils.isPaused();
+        }
+
+      if (!paused)
         {
           mjtNum sim_start = mujoco_ros_control.mujoco_data_->time;
           while(mujoco_ros_control.mujoco_data_->time - sim_start < 1.0 / 60.0 && ros::ok())
             {
               mujoco_ros_control.update();
             }
-          if(!headless) mujoco_visualization_utils.update(window);
+        }
+
+      if(!headless)
+        {
+          mujoco_visualization_utils.update(window);
+
+          if (glfwWindowShouldClose(window))
+            {
+              break;
+            }
         }
     }
+
   if(!headless) mujoco_visualization_utils.terminate();
   return 0;
 }

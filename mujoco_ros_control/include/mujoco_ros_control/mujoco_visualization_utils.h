@@ -42,6 +42,8 @@ public:
 
   void terminate();
 
+  bool isPaused() { return paused; }
+
 private:
   MujocoVisualizationUtils(void)
   {};
