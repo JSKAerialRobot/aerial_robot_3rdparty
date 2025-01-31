@@ -12,7 +12,7 @@ execute_process(COMMAND
 ExternalProject_Add(
   nlopt
   GIT_REPOSITORY https://github.com/stevengj/nlopt.git
-  GIT_TAG v2.6.0
+  GIT_TAG v2.9.0
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
   INSTALL_COMMAND echo "install"
   )
