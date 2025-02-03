@@ -2,19 +2,15 @@ on: [push, pull_request]
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04-arm
     name: ros_build_test
     strategy:
       fail-fast: false
       matrix:
         include:
           - ROS_DISTRO : noetic
-            DOCKER_IMAGE : arm64v8/ubuntu:focal # ubuntu:focal
+            DOCKER_IMAGE : ubuntu:focal
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-            platforms: linux/arm64
       - name: Setup OS
         run: |
           sudo apt-get update -y
