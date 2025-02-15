@@ -25,17 +25,6 @@ sudo rosdep init
 
 rosdep update --include-eol-distros
 
-# install latest cmake for melodic
-if [[ "$ROS_DISTRO" = "melodic" ]]; then
-    cmake --version
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-    sudo apt-get install -y software-properties-common
-    sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
-    sudo apt update
-    sudo apt install -y cmake
-    cmake --version
-fi
-
 # Install source code
 mkdir -p ~/catkin_ws/src
 cd ~/catkin_ws
