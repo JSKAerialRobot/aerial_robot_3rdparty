@@ -28,7 +28,7 @@ def process_subdirectories(root):
                 script_path = os.path.abspath(__file__)
                 script_dir = os.path.dirname(script_path)
 
-                cmd = "meshlabserver -i {} -o {} -m binary".format(input_file, output_file)
+                cmd = "xvfb-run meshlabserver -i {} -o {} -m binary".format(input_file, output_file)
                 run_subprocess(cmd)
 
 process_subdirectories(meshdir)
