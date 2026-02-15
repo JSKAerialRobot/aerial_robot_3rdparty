@@ -124,10 +124,7 @@ def process_urdf(package, urdf_path, workdir_path):
 
 
 def generate_xml(urdf_path, mujoco_path):
-    # compile by mujoco
-    mujoco_ros_control = rospack.get_path("mujoco_ros_control")
-    mujoco_compile_path = os.path.join(mujoco_ros_control, "build/mujoco-2.3.7/bin/compile")
-    cmd = "{} {} {}".format(mujoco_compile_path, urdf_path, mujoco_path)
+    cmd = "rosrun mujoco compile {} {}".format(urdf_path, mujoco_path)
     run_subprocess(cmd)
 
 def process_xml(urdf_path, mujoco_path):
@@ -387,8 +384,8 @@ def process_xml(urdf_path, mujoco_path):
     mujoco_root.append(sensor_elem)
 
     # include world
-    mujoco_ros_control = rospack.get_path("mujoco_ros_control")
-    world_path = os.path.join(mujoco_ros_control, "config/world.xml")
+    mujoco_ros_utils = rospack.get_path("mujoco_ros_utils")
+    world_path = os.path.join(mujoco_ros_utils, "config/world.xml")
     rel_path = os.path.relpath(world_path, get_directory(mujoco_path))
     include_elem = ET.Element("include")
     include_elem.set("file", rel_path)
@@ -408,8 +405,8 @@ def process_xml(urdf_path, mujoco_path):
 
 
 def convert_dae2stl(meshdir):
-    mujoco_ros_control = rospack.get_path("mujoco_ros_control")
-    cmd = "blender -b -P {} -- {} > /dev/null 2>&1".format(os.path.join(mujoco_ros_control, "scripts/convert.py"), meshdir)
+    mujoco_ros_utils = rospack.get_path("mujoco_ros_utils")
+    cmd = "blender -b -P {} -- {} > /dev/null 2>&1".format(os.path.join(mujoco_ros_utils, "scripts/convert.py"), meshdir)
     run_subprocess(cmd)
 
 
@@ -428,7 +425,7 @@ config_path = ""
 if(len(sys.argv) == 2):
     config_path = sys.argv[1]
 else:
-    print("Variable error! Please run following command.\nrosrun mujoco_ros_control mujoco_model_generator.py absolute_path_to_config_file")
+    print("Variable error! Please run following command.\nrosrun mujoco_ros_utils mujoco_model_generator.py absolute_path_to_config_file")
     sys.exit()
 
 with open(config_path) as file:
