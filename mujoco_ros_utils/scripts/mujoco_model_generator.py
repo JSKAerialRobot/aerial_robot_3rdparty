@@ -148,10 +148,8 @@ def process_xml(urdf_path, mujoco_path):
     # process joints
     thrusts = ""
     rotor_axis_dict = {}
+    joint_effort_limit_dict = {}
     for joint in mujoco_root.iter("joint"):
-        ## for joint
-        if "joint" in joint.attrib["name"]:
-            joint.set("damping", "150") # modify damping
         ## for rotor
         if "rotor" in joint.attrib["name"]:
             ### get control range
@@ -168,6 +166,9 @@ def process_xml(urdf_path, mujoco_path):
             site_elem.set("pos", "0 0 0")
             parent_body.remove(joint)
             parent_body.append(site_elem)
+        ## for joint
+        else:
+            joint_effort_limit_dict[joint.attrib["name"]] = joint.attrib["actuatorfrcrange"]
 
     # surround root link by body tag
     ## find root link
@@ -360,9 +361,11 @@ def process_xml(urdf_path, mujoco_path):
         actuator_elem.append(rotor_elem)
     ## joints
     for joint in joint_list:
-        joint_elem = ET.Element("position")
+        joint_elem = ET.Element("motor")
         joint_elem.set("name", joint)
-        joint_elem.set("kp", "40")
+        joint_elem.set("ctrllimited", "true")
+        joint_elem.set("ctrlrange", joint_effort_limit_dict[joint])
+        joint_elem.set("gear", "1")
         joint_elem.set("joint", joint)
         actuator_elem.append(joint_elem)
     mujoco_root.append(actuator_elem)
