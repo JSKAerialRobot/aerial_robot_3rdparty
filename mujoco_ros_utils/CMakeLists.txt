@@ -4,7 +4,6 @@ project(mujoco_ros_utils)
 add_compile_options(-std=c++17)
 
 find_package(catkin REQUIRED COMPONENTS
-  mujoco
   )
 
 catkin_package(
