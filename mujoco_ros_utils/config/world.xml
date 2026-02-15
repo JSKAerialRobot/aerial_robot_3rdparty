@@ -1,6 +1,6 @@
 <mujoco model="world">
-  <compiler coordinate="local" convexhull="false" angle="radian"/>
-  <option timestep="0.001" gravity="0 0 -9.81" collision="all"/>
+  <compiler coordinate="local" angle="radian"/>
+  <option timestep="0.001" gravity="0 0 -9.81"/>
   <option density="1" viscosity="1e-3"/>
   <option integrator="implicit" />
 
