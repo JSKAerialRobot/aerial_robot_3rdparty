@@ -409,7 +409,8 @@ def process_xml(urdf_path, mujoco_path):
 
 def convert_dae2stl(meshdir):
     mujoco_ros_utils = rospack.get_path("mujoco_ros_utils")
-    cmd = "blender -b -P {} -- {} > /dev/null 2>&1".format(os.path.join(mujoco_ros_utils, "scripts/convert.py"), meshdir)
+    cmd = "python {} {}".format(os.path.join(mujoco_ros_utils, "scripts/convert.py"), meshdir)
+    print(cmd)
     run_subprocess(cmd)
 
 
