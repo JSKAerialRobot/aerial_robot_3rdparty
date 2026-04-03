@@ -9,6 +9,7 @@ import os
 import sys
 import rospy
 import shutil
+from convert import convert_dae_to_stl
 
 rotor_list = []
 joint_list = []
@@ -60,20 +61,39 @@ def process_urdf(package, urdf_path, workdir_path):
         for link_visual in link.findall("visual"):
             for link_visual_geometry in link_visual.findall("geometry"):
                 for link_visual_geometry_mesh in link_visual_geometry.findall("mesh"):
-                    filepath = link_visual_geometry_mesh.attrib["filename"]
+                    original_filepath = link_visual_geometry_mesh.attrib["filename"]
                     search_string = "package://"
-                    index = filepath.find(search_string)
-                    filename = filepath[index + len(search_string):]
-                    filename = filename[filename.find("/"):]
-                    filepath = rospack.get_path(package) + filename
+                    index = original_filepath.find(search_string)
+                    filepath_with_pkg = original_filepath[index + len(search_string):]
+                    filepath_from_pkg = filepath_with_pkg[filepath_with_pkg.find("/"):]
+                    filepath = rospack.get_path(package) + filepath_from_pkg
+                    mujoco_mesh_path = ""
 
-                    # modify extention
-                    filename, ex = os.path.splitext(filepath)
-                    filepath = filename + ".stl"
-                    filename = get_filename(filepath)
+                    # generate stl in mujoco workdir
+                    _, ex = os.path.splitext(filepath)
+                    if(ex == ".stl" or ex == ".STL"): # used mesh is originally stl
+                        shutil.copy(filepath, workdir_path)
+                        mujoco_mesh_path = os.path.join(workdir_path, get_filename(filepath))
 
-                    # copy stl to working directory
-                    shutil.copy(filepath, workdir_path)
+                    elif(ex == ".dae" or ex == ".DAE"): # used mesh is originally dae, need to copy stl if exist, otherwise convert to stl
+                        dae_path = filepath
+                        stl_path = remove_extension(filepath) + ".stl"
+                        STL_path = remove_extension(filepath) + ".STL"
+                        if os.path.isfile(stl_path): # stl exist, copy stl
+                            shutil.copy(stl_path, workdir_path)
+                            print("{} already exist, copy to {}".format(stl_path, workdir_path))
+                            mujoco_mesh_path = stl_path
+                        elif os.path.isfile(STL_path): # STL exist, copy STL
+                            shutil.copy(STL_path, workdir_path)
+                            print("{} already exist, copy to {}".format(STL_path, workdir_path))
+                            mujoco_mesh_path = STL_path
+                        else:
+                            print("{} not exist, convert {} to stl".format(stl_path, dae_path))
+                            convert_dae_to_stl(dae_path, os.path.join(workdir_path, get_filename(stl_path)))
+                            mujoco_mesh_path = stl_path
+                        print("\n\n\n")
+
+                    filename = get_filename(mujoco_mesh_path)
 
                     # add geometry in visual tag
                     geometry_elem = ET.Element('geometry')
@@ -407,24 +427,6 @@ def process_xml(urdf_path, mujoco_path):
     # os.remove(urdf_path)
 
 
-def convert_dae2stl(meshdir):
-    mujoco_ros_utils = rospack.get_path("mujoco_ros_utils")
-    cmd = "python {} {}".format(os.path.join(mujoco_ros_utils, "scripts/convert.py"), meshdir)
-    print(cmd)
-    run_subprocess(cmd)
-
-
-def remove_stl(meshdir):
-    for foldername, subfolders, filenames in os.walk(meshdir):
-        for filename in filenames:
-            if filename.endswith(".stl"):
-                dae_name = remove_extension(filename) + ".dae"
-                dae_path = os.path.join(foldername, dae_name)
-                stl_path = os.path.join(foldername, filename)
-                if os.path.isfile(dae_path):
-                    os.remove(stl_path)
-
-
 config_path = ""
 if(len(sys.argv) == 2):
     config_path = sys.argv[1]
@@ -437,10 +439,6 @@ with open(config_path) as file:
     for package in obj["package"]:
         print(package)
         pkg_path = rospack.get_path(package)
-        meshdir = os.path.join(pkg_path, obj[package]["meshdir"])
-        if os.path.isdir(os.path.join(pkg_path, "mujoco")):
-            shutil.rmtree(os.path.join(pkg_path, "mujoco"))
-        convert_dae2stl(meshdir)
         for (input_path, filename) in zip(obj[package]["input"], obj[package]["filename"]):
             input_xacro_path = os.path.join(pkg_path, input_path)
             workdir_path = os.path.join(pkg_path, "mujoco", filename)
@@ -453,8 +451,7 @@ with open(config_path) as file:
             process_urdf(package, output_urdf_path, workdir_path)
 
             mujoco_path = os.path.join(workdir_path, "robot.xml")
+
             generate_xml(output_urdf_path, mujoco_path)
 
             process_xml(output_urdf_path, mujoco_path)
-
-        remove_stl(meshdir)
