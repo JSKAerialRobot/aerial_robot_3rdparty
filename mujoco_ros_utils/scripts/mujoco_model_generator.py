@@ -169,6 +169,8 @@ def process_xml(urdf_path, mujoco_path):
     rotor_axis_dict = {}
     joint_effort_limit_dict = {}
     for joint in mujoco_root.iter("joint"):
+        if joint.get("name") is None:
+            continue
         ## for rotor
         if "rotor" in joint.attrib["name"]:
             ### get control range
