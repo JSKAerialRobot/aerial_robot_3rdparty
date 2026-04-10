@@ -279,7 +279,7 @@ def process_xml(urdf_path, mujoco_path):
     ### links conected to root link with fixed joint
     child_link_name_list = []
     #### get link names
-    for urdf_joint in urdf_root.iter("joint"):
+    for urdf_joint in urdf_root.findall("joint"):
         if urdf_joint.attrib["type"] == "fixed":
             is_parent_root = False
             parent_link_name = ""
