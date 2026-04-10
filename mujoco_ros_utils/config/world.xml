@@ -14,7 +14,7 @@
 
   <worldbody>
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
-    <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
+    <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3" contype="1" conaffinity="1" friction="0.7 0.5 0.3"/>
   </worldbody>
 
 </mujoco>
