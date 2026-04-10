@@ -50,11 +50,17 @@ def process_urdf(package, urdf_path, workdir_path):
     urdf_root = urdf_tree.getroot()
 
     # add mujoco config
-    mujoco = ET.Element('mujoco')
-    compiler = ET.SubElement(mujoco, 'compiler')
-    option = ET.SubElement(mujoco, 'option')
-    compiler.set('balanceinertia', 'true')
-    urdf_root.append(mujoco)
+    ## mujoco tag under root
+    mujoco = urdf_root.find("mujoco")
+    if mujoco is None:
+        mujoco = ET.Element("mujoco")
+        urdf_root.append(mujoco)
+
+    ## compiler tag under mujoco
+    compiler = mujoco.find("compiler")
+    if compiler is None:
+        compiler = ET.SubElement(mujoco, "compiler")
+    compiler.set("balanceinertia", "true")
 
     # fix mesh path in visual tag
     for link in urdf_root.findall("link"):
