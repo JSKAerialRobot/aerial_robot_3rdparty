@@ -97,7 +97,6 @@ def process_urdf(package, urdf_path, workdir_path):
                             print("{} not exist, convert {} to stl".format(stl_path, dae_path))
                             convert_dae_to_stl(dae_path, os.path.join(workdir_path, get_filename(stl_path)))
                             mujoco_mesh_path = stl_path
-                        print("\n\n\n")
 
                     filename = get_filename(mujoco_mesh_path)
 
