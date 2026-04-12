@@ -247,6 +247,7 @@ def process_xml(urdf_path, mujoco_path):
         inertial_elem.set("fullinertia", root_link_inertia)
         root_link_elem.append(inertial_elem)
         freejoint_elem = ET.Element("freejoint")
+        freejoint_elem.set("name", "root_joint")
         root_link_elem.append(freejoint_elem)
 
         for worldbody_elem in worldbody_elem_list:
