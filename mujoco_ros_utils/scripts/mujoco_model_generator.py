@@ -61,6 +61,7 @@ def process_urdf(package, urdf_path, workdir_path):
     if compiler is None:
         compiler = ET.SubElement(mujoco, "compiler")
     compiler.set("balanceinertia", "true")
+    compiler.set("fusestatic", "false")
 
     # fix mesh path in visual tag
     for link in urdf_root.findall("link"):
@@ -166,7 +167,6 @@ def process_xml(urdf_path, mujoco_path):
 
     # map of (child, parent)
     mujoco_parent_map = dict((c, p) for p in mujoco_tree.iter() for c in p)
-    urdf_parent_map = dict((c, p) for p in urdf_tree.iter() for c in p)
 
     # get m_f_rate from urdf
     m_f_rate = 0.0
@@ -200,177 +200,60 @@ def process_xml(urdf_path, mujoco_path):
         else:
             joint_effort_limit_dict[joint.attrib["name"]] = joint.attrib["actuatorfrcrange"]
 
-    # surround root link by body tag
-    ## find root link
+    # add free joint to root link
+    ## find root link: the link which never appears as a child of any joint
+    child_link_names = set()
+    for urdf_joint in urdf_root.findall("joint"):
+        for urdf_joint_child in urdf_joint.findall("child"):
+            child_link_names.add(urdf_joint_child.attrib["link"])
     root_link_name = ""
-    for joint in urdf_root.iter("joint"):
-        is_root_joint = False
-        for joint_elem in joint:
-            if joint_elem.tag == "parent" and joint_elem.attrib["link"] == "root":
-                is_root_joint = True
-        if is_root_joint:
-            for joint_elem in joint:
-                if joint_elem.tag == "child":
-                    root_link_name = joint_elem.attrib["link"]
+    for link in urdf_root.findall("link"):
+        if link.attrib["name"] not in child_link_names:
+            root_link_name = link.attrib["name"]
+            break
+    if root_link_name == "":
+        print("Error! root link is not found in urdf")
+        sys.exit()
 
-    ## get root link inertial
-    root_link_mass = ""
-    root_link_origin = ""
-    root_link_inertia = ""
-    for link in urdf_root.iter("link"):
-        if link.attrib["name"] == root_link_name:
-            for link_elem in link:
-                if(link_elem.tag == "inertial"):
-                    link_inertial = link_elem
-                    for link_inertial_elem in link_inertial:
-                        if link_inertial_elem.tag == "mass":
-                            root_link_mass = link_inertial_elem.attrib["value"]
-                        if link_inertial_elem.tag == "origin":
-                            root_link_origin = link_inertial_elem.attrib["xyz"]
-                        if link_inertial_elem.tag == "inertia":
-                            root_link_inertia = link_inertial_elem.attrib["ixx"] + " " + link_inertial_elem.attrib["iyy"] + " " + link_inertial_elem.attrib["izz"] + " " + link_inertial_elem.attrib["ixy"] + " " + link_inertial_elem.attrib["ixz"] + " " + link_inertial_elem.attrib["iyz"]
-
-    ## add root link body
-    worldbody_elem_list = []
+    ## with fusestatic="false" the urdf tree is kept
+    ## only set the initial pose and add a free joint.
+    is_freejoint_added = False
     for worldbody in mujoco_root.iter("worldbody"):
-        for worldbody_elem in worldbody:
-            worldbody_elem_list.append(worldbody_elem)
-        for worldbody_elem in  worldbody_elem_list:
-            worldbody.remove(worldbody_elem)
-
-        root_link_elem = ET.Element("body")
-        root_link_elem.set("name", root_link_name)
-        root_link_elem.set("pos", "0 0 0.2")
-        inertial_elem = ET.Element("inertial")
-        inertial_elem.set("pos", root_link_origin)
-        inertial_elem.set("mass", root_link_mass)
-        inertial_elem.set("fullinertia", root_link_inertia)
-        root_link_elem.append(inertial_elem)
-        freejoint_elem = ET.Element("freejoint")
-        freejoint_elem.set("name", "root_joint")
-        root_link_elem.append(freejoint_elem)
-
-        for worldbody_elem in worldbody_elem_list:
-            root_link_elem.append(worldbody_elem)
-        worldbody.append(root_link_elem)
+        for body in worldbody.findall("body"):
+            if body.attrib["name"] != root_link_name:
+                continue
+            body.set("pos", "0 0 0.2")
+            freejoint_elem = ET.Element("freejoint")
+            freejoint_elem.set("name", "root_joint")
+            body.insert(0, freejoint_elem)
+            is_freejoint_added = True
+    if not is_freejoint_added:
+        print("Error! root link '{}' is not a top level body in mujoco model".format(root_link_name))
+        sys.exit()
 
     # add site at fc
     fc_name = ""
-    fc_joint = ""
-    fc_parent = ""
-    fc_rel_pos = ""
     ## find fc name
     for baselink in urdf_root.iter("baselink"):
         fc_name = baselink.attrib["name"]
-    ## find parent link
-    for child in urdf_root.iter("child"):
-        if child.attrib["link"] == fc_name:
-            fc_joint = urdf_parent_map[child]
-            for fc_joint_elem in fc_joint:
-                if fc_joint_elem.tag == "parent":
-                    fc_parent = fc_joint_elem.attrib["link"]
-                if fc_joint_elem.tag == "origin":
-                    fc_rel_pos = fc_joint_elem.attrib["xyz"]
-    ## add site fc
+    if fc_name == "":
+        print("Error! baselink is not found in urdf, please add '<baselink name=\"fc\" />' to your urdf file")
+        sys.exit()
+
+    ## with fusestatic="false" the fc link itself remains as a body, so put the site
+    ## at the origin of that body. the orientation of fc is reflected as well.
+    is_fc_site_added = False
     for mujoco_body in mujoco_root.iter("body"):
-        if mujoco_body.attrib["name"] == fc_parent:
-            site_elem = ET.Element("site")
-            site_elem.set("name", fc_name)
-            site_elem.set("pos", fc_rel_pos)
-            mujoco_body.append(site_elem)
-
-
-    # add inertial to fixed links connected to root link
-    ## search urdf joint
-    ### links conected to root link with fixed joint
-    child_link_name_list = []
-    #### get link names
-    for urdf_joint in urdf_root.findall("joint"):
-        if urdf_joint.attrib["type"] == "fixed":
-            is_parent_root = False
-            parent_link_name = ""
-            child_link_name = ""
-            child_link_origin_xyz = ""
-            child_link_origin_rpy = ""
-            for urdf_joint_elem in urdf_joint:
-                if urdf_joint_elem.tag == "parent":
-                    parent_link_name = urdf_joint_elem.attrib["link"]
-                    if parent_link_name == root_link_name:
-                        is_parent_root = True
-                if urdf_joint_elem.tag == "child":
-                    child_link_name = urdf_joint_elem.attrib["link"]
-            if is_parent_root:
-                child_link_name_list.append(child_link_name)
-
-
-    #### search visual and inertial
-    mesh_list = []
-    mass_list = []
-    origin_pos_list = []
-    inertia_list = []
-    link_list = []
-    for child_link_name in child_link_name_list:
-        for link in urdf_root.iter("link"):
-            if link.attrib["name"] == child_link_name:
-                is_exist_inertial = False
-                is_exist_visual = False
-                inertial_mass = ""
-                inertial_origin_pos = ""
-                inertial_inertia = ""
-                for link_elem in link:
-                    if link_elem.tag == "visual":
-                        is_exist_visual = True
-                    if link_elem.tag == "inertial":
-                        is_exist_inertial = True
-                        for link_inertial_elem in link_elem:
-                            if link_inertial_elem.tag == "mass":
-                                inertial_mass = link_inertial_elem.attrib["value"]
-                            if link_inertial_elem.tag == "origin":
-                                inertial_origin_pos = link_inertial_elem.attrib["xyz"]
-                            if link_inertial_elem.tag == "inertia":
-                                inertial_inertia = link_inertial_elem.attrib["ixx"] + " " + link_inertial_elem.attrib["iyy"] + " " + link_inertial_elem.attrib["izz"] + " " + link_inertial_elem.attrib["ixy"] + " " + link_inertial_elem.attrib["ixz"] + " " + link_inertial_elem.attrib["iyz"]
-
-                if is_exist_inertial and is_exist_visual:
-                    mass_list.append(inertial_mass)
-                    origin_pos_list.append(inertial_origin_pos)
-                    inertia_list.append(inertial_inertia)
-                    link_list.append(link.attrib["name"])
-
-    # output modified mujoco model
-    xmlstr = minidom.parseString(ET.tostring(mujoco_root)).toprettyxml(indent="  ")
-    with open(mujoco_path, "w") as f:
-        f.write(xmlstr)
-
-    # remove brank line in xml
-    cmd = "sed -i '/^[[:space:]]*$/d' {}".format(mujoco_path)
-    run_subprocess(cmd)
-
-    # reload mujoco model
-    mujoco_tree = ET.parse(mujoco_path)
-    mujoco_root = mujoco_tree.getroot()
-    mujoco_parent_map = dict((c, p) for p in mujoco_tree.iter() for c in p)
-
-    ### modify xml
-    for geom in mujoco_root.iter("geom"):
-        if geom.attrib["name"] in link_list:
-            geom_pos = "0 0 0"
-            geom_quat = "1 0 0 0"
-            if "pos" in geom.attrib:
-                geom_pos = geom.attrib["pos"]
-            if "quat" in geom.attrib:
-                geom_quat = geom.attrib["quat"]
-            parent_body = mujoco_parent_map[geom]
-            index = link_list.index(geom.attrib["name"])
-            body_elem = ET.Element("body")
-            body_elem.set("name", link_list[index])
-            body_elem.set("pos", geom_pos)
-            body_elem.set("quat", geom_quat)
-            inertial_elem = ET.Element("inertial")
-            inertial_elem.set("pos", origin_pos_list[index])
-            inertial_elem.set("mass", mass_list[index])
-            inertial_elem.set("fullinertia", inertia_list[index])
-            body_elem.append(inertial_elem)
-            parent_body.append(body_elem)
+        if mujoco_body.attrib["name"] != fc_name:
+            continue
+        site_elem = ET.Element("site")
+        site_elem.set("name", fc_name)
+        site_elem.set("pos", "0 0 0")
+        mujoco_body.append(site_elem)
+        is_fc_site_added = True
+    if not is_fc_site_added:
+        print("Error! baselink '{}' is not found as a body in mujoco model".format(fc_name))
+        sys.exit()
 
     # process geoms
     for geom in mujoco_root.iter("geom"):
