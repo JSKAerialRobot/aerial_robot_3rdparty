@@ -17,8 +17,6 @@ from convert import convert_dae_to_stl  # noqa: E402
 DAE_PATH = os.path.join(PKG_DIR, "test", "data", "main_body.dae")
 
 
-@unittest.skipUnless(shutil.which("meshlabserver") and shutil.which("xvfb-run"),
-                     "meshlabserver and xvfb-run are needed to convert dae to stl")
 class TestConvertDaeToStl(unittest.TestCase):
     def test_dae_is_converted_to_binary_stl(self):
         workdir = tempfile.mkdtemp()
