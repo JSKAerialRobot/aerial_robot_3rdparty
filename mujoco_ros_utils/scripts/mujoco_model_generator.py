@@ -9,6 +9,7 @@ import os
 import sys
 import rospy
 import shutil
+from copy import deepcopy
 from convert import convert_dae_to_stl
 
 rotor_list = []
@@ -73,7 +74,8 @@ def process_urdf(package, urdf_path, workdir_path):
                     index = original_filepath.find(search_string)
                     filepath_with_pkg = original_filepath[index + len(search_string):]
                     filepath_from_pkg = filepath_with_pkg[filepath_with_pkg.find("/"):]
-                    filepath = rospack.get_path(package) + filepath_from_pkg
+                    mesh_package = filepath_with_pkg.split("/", 1)[0]
+                    filepath = rospack.get_path(mesh_package) + filepath_from_pkg
                     mujoco_mesh_path = ""
 
                     # generate stl in mujoco workdir
@@ -105,6 +107,8 @@ def process_urdf(package, urdf_path, workdir_path):
                     geometry_elem = ET.Element('geometry')
                     mesh_elem = ET.Element("mesh")
                     mesh_elem.set("filename", filename)
+                    if "scale" in link_visual_geometry_mesh.attrib:
+                        mesh_elem.set("scale", link_visual_geometry_mesh.attrib["scale"])
                     geometry_elem.append(mesh_elem)
                     link_visual.remove(link_visual_geometry)
                     link_visual.append(geometry_elem)
@@ -117,15 +121,13 @@ def process_urdf(package, urdf_path, workdir_path):
 
     ## copy from visual
     for link in urdf_root.findall("link"):
-        collision_tag = ET.Element("collision")
         link_name = link.attrib["name"]
-        collision_tag.set("name", link_name)
-        visual_exist = False
-        for link_visual in link.findall("visual"):
-            visual_exist = True
+        visuals = link.findall("visual")
+        for index, link_visual in enumerate(visuals):
+            collision_tag = ET.Element("collision")
+            collision_tag.set("name", link_name if len(visuals) == 1 else "{}_{}".format(link_name, index))
             for link_visual_elem in link_visual:
-                collision_tag.append(link_visual_elem)
-        if visual_exist:
+                collision_tag.append(deepcopy(link_visual_elem))
             link.append(collision_tag)
 
     # get actuator list
