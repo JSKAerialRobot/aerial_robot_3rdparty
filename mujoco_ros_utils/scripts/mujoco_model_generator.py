@@ -9,6 +9,7 @@ import os
 import sys
 import rospy
 import shutil
+import shlex
 from copy import deepcopy
 from convert import convert_dae_to_stl
 
@@ -38,8 +39,8 @@ def remove_extension(filename):
 
 
 def run_xacro(input_path, output_path):
-    cmd = "rosrun xacro xacro {} > {}".format(input_path, output_path)
-    run_subprocess(cmd)
+    with open(output_path, "w") as output:
+        subprocess.run(["rosrun", "xacro", "xacro", input_path], stdout=output, check=True)
 
 
 def process_urdf(package, urdf_path, workdir_path):
@@ -147,13 +148,17 @@ def process_urdf(package, urdf_path, workdir_path):
         f.write(xmlstr)
 
     # remove blank lines in urdf
-    cmd = "sed -i '/^[[:space:]]*$/d' {}".format(urdf_path)
+    cmd = "sed -i '/^[[:space:]]*$/d' {}".format(shlex.quote(urdf_path))
     run_subprocess(cmd)
 
 
 def generate_xml(urdf_path, mujoco_path):
-    cmd = "rosrun mujoco compile {} {}".format(urdf_path, mujoco_path)
-    run_subprocess(cmd)
+    # The compiler can exit successfully on a load error; reject missing output.
+    if os.path.exists(mujoco_path):
+        os.remove(mujoco_path)
+    subprocess.run(["rosrun", "mujoco", "compile", urdf_path, mujoco_path], check=True)
+    if not os.path.isfile(mujoco_path):
+        raise RuntimeError("MuJoCo compilation failed: " + urdf_path)
 
 def process_xml(urdf_path, mujoco_path):
     mujoco_tree = ET.parse(mujoco_path)
@@ -316,7 +321,7 @@ def process_xml(urdf_path, mujoco_path):
         f.write(xmlstr)
 
     # remove brank line in xml
-    cmd = "sed -i '/^[[:space:]]*$/d' {}".format(mujoco_path)
+    cmd = "sed -i '/^[[:space:]]*$/d' {}".format(shlex.quote(mujoco_path))
     run_subprocess(cmd)
 
     # remove intermediate urdf file
@@ -340,7 +345,7 @@ with open(config_path) as file:
             workdir_path = os.path.join(pkg_path, "mujoco", filename)
             output_urdf_path = os.path.join(workdir_path, "robot.urdf")
 
-            os.makedirs(workdir_path)
+            os.makedirs(workdir_path, exist_ok=True)
 
             run_xacro(input_xacro_path, output_urdf_path)
 
