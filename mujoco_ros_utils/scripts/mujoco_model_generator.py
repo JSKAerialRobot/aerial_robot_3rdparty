@@ -174,7 +174,7 @@ def process_xml(urdf_path, mujoco_path):
         m_f_rate = m_f_rate_elem.attrib["value"]
 
     # process joints
-    thrusts = ""
+    thrusts = {}
     rotor_axis_dict = {}
     joint_effort_limit_dict = {}
     for joint in mujoco_root.iter("joint"):
@@ -183,7 +183,7 @@ def process_xml(urdf_path, mujoco_path):
         ## for rotor
         if "rotor" in joint.attrib["name"]:
             ### get control range
-            thrusts = joint.attrib["range"]
+            thrusts[joint.attrib["name"]] = joint.attrib["range"]
 
             ### get rotor axis for counter torque
             axis = joint.attrib["axis"].split()[2]
@@ -269,7 +269,7 @@ def process_xml(urdf_path, mujoco_path):
         rotor_elem = ET.Element("motor")
         rotor_elem.set("name", rotor)
         rotor_elem.set("ctrllimited", "true")
-        rotor_elem.set("ctrlrange", thrusts)
+        rotor_elem.set("ctrlrange", thrusts[rotor])
         rotor_elem.set("gear", "0 0 1 0 0 " + str(float(m_f_rate) * float(rotor_axis_dict[rotor])))
         rotor_elem.set("site", rotor)
         actuator_elem.append(rotor_elem)
