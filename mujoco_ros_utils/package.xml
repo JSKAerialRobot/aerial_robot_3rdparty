@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>mujoco_ros_utils</name>
+  <version>0.0.0</version>
+  <description>The mujoco_ros_utils package</description>
+
+  <maintainer email="sugihara@jsk.imi.i.u-tokyo.ac.jp">Kazuki Sugihara</maintainer>
+
+  <license>BSD</license>
+
+  <author>Kazuki Sugihara</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>meshlab</run_depend>
+  <run_depend>mujoco</run_depend>
+  <run_depend>xvfb</run_depend>
+
+</package>
